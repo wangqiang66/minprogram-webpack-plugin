@@ -57,67 +57,15 @@ class MiniWebpackPlugin extends MinProgram {
     compiler.hooks.emit.tapAsync('MiniWebpackPlugin',
       this.try(
         async compilation => {
-          console.log(1111111111, 'emit')
           await this.toEmitTabBarIcons(compilation)
         }
       ))
     compiler.hooks.afterEmit.tapAsync('MiniWebpackPlugin',
       this.try(
         async compilation => {
-          console.log(1111111111, 'afterEmit')
           await this.toAddTabBarIconsDependencies(compilation)
         }
       ))
-    compiler.hooks.entryOption.tap('MiniWebpackPlugin', () => {
-      console.log(1111111111, 'entryOption')
-    })
-    compiler.hooks.afterPlugins.tap('MiniWebpackPlugin', (compiler) => {
-      console.log(1111111111, 'afterPlugins')
-    })
-    compiler.hooks.afterResolvers.tap('MiniWebpackPlugin', (compiler) => {
-      console.log(1111111111, 'afterResolvers')
-    })
-    compiler.hooks.environment.tap('MiniWebpackPlugin', () => {
-      console.log(1111111111, 'environment')
-    })
-    compiler.hooks.afterEnvironment.tap('MiniWebpackPlugin', () => {
-      console.log(1111111111, 'afterEnvironment')
-    })
-    compiler.hooks.normalModuleFactory.tap('MiniWebpackPlugin', () => {
-      console.log(1111111111, 'normalModuleFactory')
-    })
-    compiler.hooks.contextModuleFactory.tap('MiniWebpackPlugin', () => {
-      console.log(1111111111, 'contextModuleFactory')
-    })
-    compiler.hooks.beforeCompile.tapAsync('MiniWebpackPlugin', this.try(
-      async compilationParams => {
-        console.log(1111111111, 'beforeCompile')
-      }
-    ))
-    compiler.hooks.thisCompilation.tap('MiniWebpackPlugin', () => {
-      console.log(1111111111, 'thisCompilation')
-    })
-    compiler.hooks.compilation.tap('MiniWebpackPlugin', () => {
-      console.log(1111111111, 'compilation')
-    })
-    compiler.hooks.make.tapAsync('MiniWebpackPlugin', this.try(
-      async compilation => {
-        console.log(1111111111, 'make')
-      }
-    ))
-    compiler.hooks.afterCompile.tapAsync('MiniWebpackPlugin', this.try(
-      async compilation => {
-        console.log(1111111111, 'afterCompile')
-      }
-    ))
-    compiler.hooks.shouldEmit.tap('MiniWebpackPlugin', () => {
-      console.log(1111111111, 'shouldEmit')
-    })
-    compiler.hooks.done.tapAsync('MiniWebpackPlugin', this.try(
-      async stats => {
-        console.log(1111111111, 'done', stats)
-      }
-    ))
   }
 
   async toEmitTabBarIcons(compilation) {

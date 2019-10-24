@@ -9,13 +9,10 @@ import { dirname, basename, resolve, parse, relative, sep, join } from 'path'
 import MultiEntryPlugin from 'webpack/lib/MultiEntryPlugin'
 import SingleEntryPlugin from 'webpack/lib/SingleEntryPlugin'
 import globby from 'globby'
-import { getBasePath, setWebpackTarget } from './MinBase'
-import MinOptions from './MinOptions'
 import MinProgram from './MinProgram'
 
 export const { Targets } = require('./Targets')
 
-const absoluteExp = /^\//
 
 const stripExt = path => {
   const { dir, name } = parse(path)
@@ -24,12 +21,11 @@ const stripExt = path => {
 
 class MiniWebpackPlugin extends MinProgram {
   constructor(options) {
-    super(options)
     if (MiniWebpackPlugin.inited) {
       throw new Error('minprogram-webpack-plugin 实例化一次就可以了，不支持多次实例化')
     }
     MiniWebpackPlugin.inited = true
-    this.options = new MinOptions().process(options)
+    super(options)
   }
 
   try(handler) {
@@ -45,7 +41,7 @@ class MiniWebpackPlugin extends MinProgram {
   }
 
   apply(compiler) {
-    this.initOptions()
+    this.initOptions(compiler)
     compiler.hooks.run.tapAsync('MiniWebpackPlugin',
       this.try(
         async compiler => {
@@ -61,15 +57,67 @@ class MiniWebpackPlugin extends MinProgram {
     compiler.hooks.emit.tapAsync('MiniWebpackPlugin',
       this.try(
         async compilation => {
+          console.log(1111111111, 'emit')
           await this.toEmitTabBarIcons(compilation)
         }
       ))
     compiler.hooks.afterEmit.tapAsync('MiniWebpackPlugin',
       this.try(
         async compilation => {
+          console.log(1111111111, 'afterEmit')
           await this.toAddTabBarIconsDependencies(compilation)
         }
       ))
+    compiler.hooks.entryOption.tap('MiniWebpackPlugin', () => {
+      console.log(1111111111, 'entryOption')
+    })
+    compiler.hooks.afterPlugins.tap('MiniWebpackPlugin', (compiler) => {
+      console.log(1111111111, 'afterPlugins')
+    })
+    compiler.hooks.afterResolvers.tap('MiniWebpackPlugin', (compiler) => {
+      console.log(1111111111, 'afterResolvers')
+    })
+    compiler.hooks.environment.tap('MiniWebpackPlugin', () => {
+      console.log(1111111111, 'environment')
+    })
+    compiler.hooks.afterEnvironment.tap('MiniWebpackPlugin', () => {
+      console.log(1111111111, 'afterEnvironment')
+    })
+    compiler.hooks.normalModuleFactory.tap('MiniWebpackPlugin', () => {
+      console.log(1111111111, 'normalModuleFactory')
+    })
+    compiler.hooks.contextModuleFactory.tap('MiniWebpackPlugin', () => {
+      console.log(1111111111, 'contextModuleFactory')
+    })
+    compiler.hooks.beforeCompile.tapAsync('MiniWebpackPlugin', this.try(
+      async compilationParams => {
+        console.log(1111111111, 'beforeCompile')
+      }
+    ))
+    compiler.hooks.thisCompilation.tap('MiniWebpackPlugin', () => {
+      console.log(1111111111, 'thisCompilation')
+    })
+    compiler.hooks.compilation.tap('MiniWebpackPlugin', () => {
+      console.log(1111111111, 'compilation')
+    })
+    compiler.hooks.make.tapAsync('MiniWebpackPlugin', this.try(
+      async compilation => {
+        console.log(1111111111, 'make')
+      }
+    ))
+    compiler.hooks.afterCompile.tapAsync('MiniWebpackPlugin', this.try(
+      async compilation => {
+        console.log(1111111111, 'afterCompile')
+      }
+    ))
+    compiler.hooks.shouldEmit.tap('MiniWebpackPlugin', () => {
+      console.log(1111111111, 'shouldEmit')
+    })
+    compiler.hooks.done.tapAsync('MiniWebpackPlugin', this.try(
+      async stats => {
+        console.log(1111111111, 'done', stats)
+      }
+    ))
   }
 
   async toEmitTabBarIcons(compilation) {
@@ -107,8 +155,10 @@ class MiniWebpackPlugin extends MinProgram {
     const globalVar = target.name === 'Alipay' ? 'my' : 'wx';
 
     // inject chunk entries
+    console.log(3333333333, this.entryResources)
     compilation.chunkTemplate.hooks.render.tap('MiniWebpackPlugin', (core, { name }) => {
       if (this.entryResources.indexOf(name) >= 0) {
+        console.log(22222222, name)
         const relativePath = relative(dirname(name), `./${commonModuleName}`);
         const posixPath = relativePath.replace(/\\/g, '/');
         const source = core.source();
@@ -127,12 +177,13 @@ class MiniWebpackPlugin extends MinProgram {
 
     // replace `window` to `global` in common chunk
     compilation.mainTemplate.hooks.bootstrap.tap('MiniWebpackPlugin', (source, chunk) => {
-      const windowRegExp = new RegExp('window', 'g');
+      const windowRegExp = new RegExp('window', 'g')
+      console.log(4444444444, name)
       if (chunk.name === commonChunkName) {
-        return source.replace(windowRegExp, globalVar);
+        return source.replace(windowRegExp, globalVar)
       }
-      return source;
-    });
+      return source
+    })
 
     // override `require.ensure()`
     compilation.mainTemplate.hooks.requireEnsure.tap(
@@ -141,24 +192,9 @@ class MiniWebpackPlugin extends MinProgram {
     )
   }
 
-  getChunkResourceRegExp() {
-    if (this._chunkResourceRegex) {
-      return this._chunkResourceRegex;
-    }
-
-    const {
-      options: { extensions }
-    } = this;
-    const exts = extensions
-      .map(ext => ext.replace(/\./g, '\\.'))
-      .map(ext => `(${ext}$)`)
-      .join('|');
-    return new RegExp(exts);
-  }
-
   addScriptEntry(compiler, entry, name) {
     compiler.hooks.make.tapAsync('MiniWebpackPlugin', (compilation, callback) => {
-      const dep = SingleEntryPlugin.createDependency(entry, name);
+      const dep = SingleEntryPlugin.createDependency(entry, name)
       compilation.addEntry(this.base, dep, name, callback)
     })
   }
@@ -180,9 +216,7 @@ class MiniWebpackPlugin extends MinProgram {
     } = this;
     for (const ext of extensions) {
       const fullPath = resolve(base, path + ext);
-      console.log(11111111111, fullPath)
       if (existsSync(fullPath)) {
-        console.log(22222222222, fullPath)
         return fullPath
       }
     }
@@ -192,7 +226,7 @@ class MiniWebpackPlugin extends MinProgram {
     const {
       options: { include, exclude, dot, assetsChunkName, extensions },
       entryResources
-    } = this;
+    } = this
 
     compiler.hooks.compilation.tap('MiniWebpackPlugin', compilation => {
       compilation.hooks.beforeChunkAssets.tap('MiniWebpackPlugin', () => {
@@ -207,7 +241,7 @@ class MiniWebpackPlugin extends MinProgram {
 
     const patterns = entryResources
       .map(resource => `${resource}.*`)
-      .concat(include);
+      .concat(include)
 
     const entries = await globby(patterns, {
       cwd: this.base,
@@ -215,20 +249,21 @@ class MiniWebpackPlugin extends MinProgram {
       realpath: true,
       ignore: [...extensions.map(ext => `**/*${ext}`), ...exclude],
       dot
-    });
+    })
 
-    this.addEntries(compiler, entries, assetsChunkName);
-  }
-
-  async run(compiler) {
-    this.entryResources = await this.getEntryResource()
-    compiler.hooks.compilation.tap('MiniWebpackPlugin', this.toModifyTemplate.bind(this))
-    this.compileScripts(compiler)
-    await this.compileAssets(compiler)
+    console.log(66666666666, entryResources, patterns, entries)
+    this.addEntries(compiler, entries, assetsChunkName)
   }
 
   addEntries(compiler, entries, chunkName) {
     compiler.apply(new MultiEntryPlugin(this.base, entries, chunkName));
+  }
+
+  async run(compiler) {
+    this.entryResources = await this.getEntryResource()
+    compiler.hooks.compilation.tap('MinWebpackPlugin', this.toModifyTemplate.bind(this))
+    this.compileScripts(compiler)
+    await this.compileAssets(compiler)
   }
 }
 

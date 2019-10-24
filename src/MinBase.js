@@ -3,24 +3,25 @@
  * author  : wq
  * update  : 2019/10/23 17:06
  */
-import { resolve, dirname } from 'path'
+import path from 'path'
 import { Targets } from './index'
 
-export function getBasePath(compiler) {
-  const { options } = compiler
+export function getBasePath(compiler, options) {
+  const { options: webpackOptions } = compiler
   const { base } = options
 
   if (base) {
-    return resolve(base)
+    return path.posix.resolve(base)
   }
 
-  const { context, entry, extensions } = options
+  const { context, entry } = webpackOptions
+  const { extensions } = options
   let appPath
   if (!(appPath = getAppByEntry(entry, extensions))) {
     console.warning('entry do not contain app')
     return context
   } else {
-    return dirname(appPath)
+    return path.posix.dirname(appPath)
   }
 }
 

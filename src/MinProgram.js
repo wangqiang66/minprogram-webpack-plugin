@@ -1,4 +1,4 @@
-import { join, parse, relative, resolve, sep } from 'path'
+import path, { join, parse, relative, resolve, sep } from 'path'
 import { readJson } from 'fs-extra'
 
 /**
@@ -8,11 +8,13 @@ import { readJson } from 'fs-extra'
  */
 import { getBasePath, setWebpackTarget } from './MinBase'
 import { values } from 'lodash'
+import MinOptions from './MinOptions'
 
 const AbsolutePathExp = /^\//
 
 export default class MinProgram {
-  constructor() {
+  constructor(options) {
+    this.options = new MinOptions().process(options)
     this.base = ''
   }
 
@@ -22,15 +24,15 @@ export default class MinProgram {
   }
 
   setBase(compiler) {
-    this.base = getBasePath(compiler)
+    this.base = getBasePath(compiler, this.options)
   }
 
   // 获取文件的路径
-  getComponentPagePath(page) {
+  getComponentPagePath(page, root = '') {
     if (AbsolutePathExp.test(page)) {
       page = page.substring(1)
     }
-    return page
+    return path.posix.join(root, page)
   }
 
   // 获取Page页面中的入口文件
@@ -47,15 +49,23 @@ export default class MinProgram {
       if (!/^[./]/.test(componentPath)) {
         component = resolve(basePath, '../node_modules', componentPath)
       }
-      else if (/^[/]/.test(componentPath)) {
-        component = resolve(basePath, componentPath.substring(1))
+      else if (AbsolutePathExp.test(componentPath)) {
+        if (/node_modules/.test(componentDirPath)) {
+          // 通常打包好的包名是
+          const packageName = ['lib', 'packages', 'dist', 'es', 'src'].join('\\\/|\\\/')
+          const packageNameExp = new RegExp(`\(\\\/${packageName}\\\/\)`)
+          const dir = componentDirPath.split(packageNameExp)[0] + RegExp.$1
+          component = resolve(dir, componentPath.substring(1))
+        } else {
+          component = resolve(basePath, componentPath.substring(1))
+        }
       }
       else {
         component = resolve(componentDirPath, componentPath)
       }
 
       if (!components.has(component)) {
-        components.add(relative(basePath, component).split(sep).join('/'))
+        components.add(path.posix.relative(basePath, component))
         await this.getComponentsEntry(components, component)
       }
     }
@@ -70,20 +80,14 @@ export default class MinProgram {
       let icon = tabBarItem.iconPath || tabBarItem.icon || ''
       let selectIcon = tabBarItem.selectedIconPath || tabBarItem.activeIcon || ''
       if (icon) {
-        if (absoluteExp.test(icon)) {
-          icon = icon.substring(1)
-        }
-        tabBarIcons.add(icon)
+        tabBarIcons.add(this.getComponentPagePath(icon))
       }
       if (selectIcon) {
-        if (absoluteExp.test(selectIcon)) {
-          selectIcon = selectIcon.substring(1)
-        }
-        tabBarIcons.add(selectIcon)
+        tabBarIcons.add(this.getComponentPagePath(selectIcon))
       }
     }
 
-    this.tabBarIcons = tabBarIcons;
+    this.tabBarIcons = tabBarIcons
   }
 
   // 获取入口文件
@@ -109,10 +113,10 @@ export default class MinProgram {
 
       await Promise.all(
         pages.map(async page => {
-          pageEntries.add(join(root, this.getComponentPagePath(page)))
+          pageEntries.add(this.getComponentPagePath(page, root))
           return this.getComponentsEntry(componentsEntries, resolve(basePath, root, page))
         })
-      );
+      )
     }
 
     await this.getTabBarIcons(tabBar)

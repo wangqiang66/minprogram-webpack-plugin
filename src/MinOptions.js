@@ -12,7 +12,8 @@ const defaultOptions = {
   dot: false,
   extensions: ['.js'],
   commonModuleName: 'common.js',
-  assetsChunkName: '__assets_chunk_name__'
+  assetsChunkName: '__assets_chunk_name__',
+  base: ''
 }
 
 export default class MinOptions {
@@ -22,14 +23,14 @@ export default class MinOptions {
 
   process(options) {
     const _options = { ...(options || {}), ...this.defaultOptions }
-    if (Array.isArray(_options.extensions)) {
+    if (!Array.isArray(_options.extensions)) {
       throw new Error('extensions: type not array')
     }
     if (_options.extensions.length < 1) {
       _options.extensions = defaultOptions.extensions
     }
-    _options.include = [].concat(options.include)
-    _options.exclude = [].concat(options.exclude)
-    return options
+    _options.include = [].concat(_options.include)
+    _options.exclude = [].concat(_options.exclude)
+    return _options
   }
 }

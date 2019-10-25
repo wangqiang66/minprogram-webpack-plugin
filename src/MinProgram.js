@@ -1,4 +1,4 @@
-import path, { join, parse, relative, resolve, sep } from 'path'
+import path, { parse, resolve } from 'path'
 import { readJson } from 'fs-extra'
 
 /**
@@ -65,7 +65,7 @@ export default class MinProgram {
       }
 
       if (!components.has(component)) {
-        components.add(path.posix.relative(basePath, component))
+        components.add(path.posix.join(...path.relative(basePath, component).split(path.sep)))
         await this.getComponentsEntry(components, component)
       }
     }

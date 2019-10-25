@@ -35,5 +35,14 @@
 
    如果非必要，建议使用scss或者sass等处理样式。对应对应的loader就可以了
    
+## 小程序开发可能存在的问题和解决方案
+1. webpack4 file-loader 处理Json问题
+- 问题描述：<br/>
+  webpack4增加了JSON的处理，所以使用file-loader处理json的时候在经过webpack的JsonParser会报错。
+- 解决方案：<br/>
+  对于file-loader处理过的Json不经过JsonParser处理就行了。file-loader
+  issue 推荐的方案是加type: "javascript:auto"
+
+   
    
    

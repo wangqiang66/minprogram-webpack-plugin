@@ -17,7 +17,6 @@ const createLintingRule = () => ({
 })
 
 module.exports = {
-  target: 'node',
   mode: 'production',
   entry: {
     index: './src/index.js'

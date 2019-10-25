@@ -29,8 +29,8 @@ export function setWebpackTarget(compiler) {
   // 处理编译的目标， 默认是微信
   const { options } = compiler
   const { target } = options
-  if (target !== Targets.Wechat && target !== Targets.Alipay) {
-    options.target = Targets.Wechat
+  if (!Object.values(Targets).find(item => item.target === target)) {
+    options.target = Targets.Wechat.target
   }
 
   if (!options.node || options.node.global) {

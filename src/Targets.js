@@ -27,7 +27,25 @@ export const createTarget = function createTarget(name) {
 
 // 利用Function.name 的特点将target放入Webpack的target的方面名里面，方便loader知道运行的的Target
 export const Targets =  {
-  Wechat: createTarget('Wechat'),
-  Alipay: createTarget('Alipay'),
-  Baidu: createTarget('Baidu')
+  Wechat: {
+    name: 'Wechat',
+    target: createTarget('Wechat'),
+    global: 'wx',
+    xmlName: 'wxml',
+    cssName: 'wxss'
+  },
+  Alipay: {
+    name: 'Alipay',
+    target: createTarget('Alipay'),
+    global: 'my',
+    xmlName: 'axml',
+    cssName: 'acss'
+  },
+  DingTalk: {
+    name: 'DingTalk',
+    target: createTarget('DingTalk'),
+    global: 'dd',
+    xmlName: 'axml',
+    cssName: 'acss'
+  }
 }

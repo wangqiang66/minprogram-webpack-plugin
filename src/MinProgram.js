@@ -35,6 +35,14 @@ export default class MinProgram {
     return path.posix.join(root, page)
   }
 
+  // 对此如果存在目录名为node_modules的，可能会出错
+  getComponentPageName(path) {
+    if (/node_modules/.test(path)) {
+      return `node_modules${path.split('node_modules')[1]}`
+    }
+    return path
+  }
+
   // 获取Page页面中的入口文件
   async getComponentsEntry(components, instance) {
     const { usingComponents = {} } = await readJson(`${instance}.json`)
@@ -64,8 +72,13 @@ export default class MinProgram {
         component = resolve(componentDirPath, componentPath)
       }
 
-      if (!components.has(component)) {
-        components.add(path.posix.join(...path.relative(basePath, component).split(path.sep)))
+      if (components.findIndex(item => item.component !== component) < 0) {
+        const entryPath = path.posix.join(...path.relative(basePath, component).split(path.sep))
+        components.push({
+          component: component,
+          name: this.getComponentPageName(entryPath),
+          path: entryPath
+        })
         await this.getComponentsEntry(components, component)
       }
     }
@@ -98,12 +111,16 @@ export default class MinProgram {
     const { pages = [], tabBar = {} } = appJson
     // 微信小程序和支付宝小程序的分包命名不一样
     const subpackages = appJson.subpackages || appJson.subPackages || []
-    const componentsEntries = new Set()
-    const pageEntries = new Set()
+    const componentsEntries = []
+    const pageEntries = []
 
     // forEach 不能用异步await
     for (let page of pages) {
-      pageEntries.add(this.getComponentPagePath(page))
+      const entryPath = this.getComponentPagePath(page)
+      pageEntries.push({
+        name: this.getComponentPageName(entryPath),
+        path: entryPath
+      })
       await this.getComponentsEntry(componentsEntries, resolve(basePath, page))
     }
 
@@ -113,7 +130,11 @@ export default class MinProgram {
 
       await Promise.all(
         pages.map(async page => {
-          pageEntries.add(this.getComponentPagePath(page, root))
+          const entryPath = this.getComponentPagePath(page, root)
+          pageEntries.push({
+            name: this.getComponentPageName(entryPath),
+            path: entryPath
+          })
           return this.getComponentsEntry(componentsEntries, resolve(basePath, root, page))
         })
       )
@@ -122,7 +143,10 @@ export default class MinProgram {
     await this.getTabBarIcons(tabBar)
 
     return [
-      'app',
+      {
+        name: 'app',
+        path: 'app'
+      },
       ...pageEntries,
       ...componentsEntries
     ]

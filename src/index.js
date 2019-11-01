@@ -5,7 +5,7 @@
  */
 import { uniq, values, defaults } from 'lodash'
 import fs, { readJson, stat, readFile, existsSync } from 'fs-extra'
-import { dirname, basename, resolve, parse, relative, sep, join } from 'path'
+import path, { dirname, basename, resolve, parse, relative, sep, join } from 'path'
 import MultiEntryPlugin from 'webpack/lib/MultiEntryPlugin'
 import SingleEntryPlugin from 'webpack/lib/SingleEntryPlugin'
 import { ConcatSource } from 'webpack-sources'
@@ -32,13 +32,15 @@ class MiniWebpackPlugin extends MinProgram {
   }
 
   try(handler) {
-    return async (arg, callback) => {
+    return async function (...args) {
+      const arg = args.slice(0, args.length - 1)
+      const callback = args[args.length - 1]
       try {
-        await handler(arg);
-        callback();
+        await handler(...arg);
+        callback()
       }
       catch (err) {
-        callback(err);
+        callback(err)
       }
     }
   }
@@ -55,7 +57,7 @@ class MiniWebpackPlugin extends MinProgram {
     compiler.hooks.watchRun.tapAsync('MiniWebpackPlugin',
       this.try(
         async compiler => {
-          await this.run(compiler.compiler)
+          await this.run(compiler)
         }
       ))
     compiler.hooks.emit.tapAsync('MiniWebpackPlugin',
@@ -70,6 +72,249 @@ class MiniWebpackPlugin extends MinProgram {
           await this.toAddTabBarIconsDependencies(compilation)
         }
       ))
+    // compiler.hooks.thisCompilation.tap('MiniWebpackPlugin1', (compilation, compilationParams) => {
+    //   compilation.hooks.buildModule.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'buildModule')
+    //   })
+    //   compilation.hooks.rebuildModule.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'rebuildModule')
+    //   })
+    //   compilation.hooks.failedModule.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'failedModule')
+    //   })
+    //   compilation.hooks.succeedModule.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'succeedModule')
+    //   })
+    //   compilation.hooks.addEntry.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'addEntry')
+    //   })
+    //   compilation.hooks.failedEntry.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'failedEntry')
+    //   })
+    //   compilation.hooks.succeedEntry.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'succeedEntry')
+    //   })
+    //   compilation.hooks.dependencyReference.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'dependencyReference')
+    //   })
+    //   compilation.hooks.finishModules.tapAsync('MiniWebpackPlugin', this.try(
+    //     () => {
+    //       console.log(444444444444, 'finishModules')
+    //     }
+    //   ))
+    //   compilation.hooks.finishRebuildingModule.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'finishRebuildingModule')
+    //   })
+    //   compilation.hooks.unseal.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'unseal')
+    //   })
+    //   compilation.hooks.seal.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'seal')
+    //   })
+    //   compilation.hooks.beforeChunks.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'beforeChunks')
+    //   })
+    //   compilation.hooks.afterChunks.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'afterChunks')
+    //   })
+    //   compilation.hooks.optimizeDependenciesBasic.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'optimizeDependenciesBasic')
+    //   })
+    //   compilation.hooks.optimizeDependencies.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'optimizeDependencies')
+    //   })
+    //   compilation.hooks.optimizeDependenciesAdvanced.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'optimizeDependenciesAdvanced')
+    //   })
+    //   compilation.hooks.afterOptimizeDependencies.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'afterOptimizeDependencies')
+    //   })
+    //   compilation.hooks.optimize.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'optimize')
+    //   })
+    //   compilation.hooks.optimizeModulesBasic.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'optimizeModulesBasic')
+    //   })
+    //   compilation.hooks.optimizeModules.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'optimizeModules')
+    //   })
+    //   compilation.hooks.optimizeModulesAdvanced.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'optimizeModulesAdvanced')
+    //   })
+    //   compilation.hooks.afterOptimizeModules.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'afterOptimizeModules')
+    //   })
+    //   compilation.hooks.optimizeChunksBasic.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'optimizeChunksBasic')
+    //   })
+    //   compilation.hooks.optimizeChunks.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'optimizeChunks')
+    //   })
+    //   compilation.hooks.optimizeChunksAdvanced.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'optimizeChunksAdvanced')
+    //   })
+    //   compilation.hooks.afterOptimizeChunks.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'afterOptimizeChunks')
+    //   })
+    //   compilation.hooks.optimizeTree.tapAsync('MiniWebpackPlugin1', this.try(
+    //     () => {
+    //       console.log(444444444444, 'optimizeTree')
+    //     }
+    //   ))
+    //   compilation.hooks.afterOptimizeTree.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'afterOptimizeTree')
+    //   })
+    //   compilation.hooks.optimizeChunkModulesBasic.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'optimizeChunkModulesBasic')
+    //   })
+    //   compilation.hooks.optimizeChunkModules.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'optimizeChunkModules')
+    //   })
+    //   compilation.hooks.optimizeChunkModulesAdvanced.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'optimizeChunkModulesAdvanced')
+    //   })
+    //   compilation.hooks.afterOptimizeChunkModules.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'afterOptimizeChunkModules')
+    //   })
+    //   compilation.hooks.shouldRecord.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'shouldRecord')
+    //   })
+    //   compilation.hooks.reviveModules.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'reviveModules')
+    //   })
+    //   compilation.hooks.optimizeModuleOrder.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'optimizeModuleOrder')
+    //   })
+    //   compilation.hooks.advancedOptimizeModuleOrder.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'advancedOptimizeModuleOrder')
+    //   })
+    //   compilation.hooks.beforeModuleIds.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'beforeModuleIds')
+    //   })
+    //   compilation.hooks.moduleIds.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'moduleIds')
+    //   })
+    //   compilation.hooks.optimizeModuleIds.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'optimizeModuleIds')
+    //   })
+    //   compilation.hooks.afterOptimizeModuleIds.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'afterOptimizeModuleIds')
+    //   })
+    //   compilation.hooks.reviveChunks.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'reviveChunks')
+    //   })
+    //   compilation.hooks.optimizeChunkOrder.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'optimizeChunkOrder')
+    //   })
+    //   compilation.hooks.beforeChunkIds.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'beforeChunkIds')
+    //   })
+    //   compilation.hooks.optimizeChunkIds.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'optimizeChunkIds')
+    //   })
+    //   compilation.hooks.afterOptimizeChunkIds.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'afterOptimizeChunkIds')
+    //   })
+    //   compilation.hooks.recordModules.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'recordModules')
+    //   })
+    //   compilation.hooks.recordChunks.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'recordChunks')
+    //   })
+    //   compilation.hooks.beforeHash.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'beforeHash')
+    //   })
+    //   compilation.hooks.contentHash.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'contentHash')
+    //   })
+    //   compilation.hooks.afterHash.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'afterHash')
+    //   })
+    //   compilation.hooks.recordHash.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'recordHash')
+    //   })
+    //   compilation.hooks.record.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'record')
+    //   })
+    //   compilation.hooks.beforeModuleAssets.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'beforeModuleAssets')
+    //   })
+    //   compilation.hooks.shouldGenerateChunkAssets.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'shouldGenerateChunkAssets')
+    //   })
+    //   compilation.hooks.beforeChunkAssets.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'beforeChunkAssets')
+    //   })
+    //   compilation.hooks.additionalChunkAssets.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'additionalChunkAssets')
+    //   })
+    //   compilation.hooks.additionalAssets.tapAsync('MiniWebpackPlugin1', this.try(
+    //     () => {
+    //       console.log(444444444444, 'additionalAssets')
+    //     }
+    //   ))
+    //   compilation.hooks.optimizeChunkAssets.tapAsync('MiniWebpackPlugin1', this.try(
+    //     () => {
+    //       console.log(444444444444, 'optimizeChunkAssets')
+    //     }
+    //   ))
+    //   compilation.hooks.afterOptimizeChunkAssets.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'afterOptimizeChunkAssets')
+    //   })
+    //   compilation.hooks.optimizeAssets.tapAsync('MiniWebpackPlugin1', this.try(
+    //     () => {
+    //       console.log(444444444444, 'optimizeAssets')
+    //     }
+    //   ))
+    //   compilation.hooks.afterOptimizeAssets.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'afterOptimizeAssets')
+    //   })
+    //   compilation.hooks.needAdditionalSeal.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'needAdditionalSeal')
+    //   })
+    //   compilation.hooks.afterSeal.tapAsync('MiniWebpackPlugin1', this.try(
+    //     () => {
+    //       console.log(444444444444, 'afterSeal')
+    //     }
+    //   ))
+    //   compilation.hooks.chunkHash.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'chunkHash')
+    //   })
+    //   compilation.hooks.moduleAsset.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'moduleAsset')
+    //   })
+    //   compilation.hooks.chunkAsset.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'chunkAsset')
+    //   })
+    //   compilation.hooks.assetPath.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'assetPath')
+    //   })
+    //   compilation.hooks.needAdditionalPass.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'needAdditionalPass')
+    //   })
+    //   compilation.hooks.childCompiler.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'childCompiler')
+    //   })
+    //   compilation.hooks.log.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'log')
+    //   })
+    //   compilation.hooks.normalModuleLoader.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'normalModuleLoader')
+    //   })
+    //   compilation.hooks.optimizeExtractedChunksBasic.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'optimizeExtractedChunksBasic')
+    //   })
+    //   compilation.hooks.optimizeExtractedChunks.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'optimizeExtractedChunks')
+    //   })
+    //   compilation.hooks.optimizeExtractedChunksAdvanced.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'optimizeExtractedChunksAdvanced')
+    //   })
+    //   compilation.hooks.afterOptimizeExtractedChunks.tap('MiniWebpackPlugin1', () => {
+    //     console.log(444444444444, 'afterOptimizeExtractedChunks')
+    //   })
+    // })
+
     // compiler.hooks.afterCompile.tapAsync('MiniWebpackPlugin',
     //   this.try(
     //     async compilation => {
@@ -108,6 +353,7 @@ class MiniWebpackPlugin extends MinProgram {
   addScriptEntry(compiler, entry, name) {
     compiler.hooks.make.tapAsync('MiniWebpackPlugin', (compilation, callback) => {
       const dep = SingleEntryPlugin.createDependency(entry, name)
+      // console.log(111111111, dep)
       compilation.addEntry(this.base, dep, name, callback)
     })
   }
@@ -115,13 +361,10 @@ class MiniWebpackPlugin extends MinProgram {
   compileScripts(compiler) {
     // this.applyCommonsChunk(compiler);
     this.entryResources
-      .filter(resource => resource !== 'app')
-      .forEach(resource => {
-        const fullPath = this.getFullScriptPath(resource)
-        if (/node_modules/.test(resource)) {
-          resource = `node_modules${resource.split('node_modules')[1]}`
-        }
-        this.addScriptEntry(compiler, fullPath, resource)
+      .filter(({ name }) => name !== 'app')
+      .forEach(({ path, name }) => {
+        const fullPath = this.getFullScriptPath(path)
+        this.addScriptEntry(compiler, fullPath, name)
       })
   }
 
@@ -145,33 +388,33 @@ class MiniWebpackPlugin extends MinProgram {
     } = this
 
 
-    compiler.hooks.compilation.tap('MiniWebpackPlugin', compilation => {
-      compilation.hooks.beforeChunkAssets.tap('MiniWebpackPlugin', () => {
-        const assetsChunkIndex = compilation.chunks.findIndex(
-          ({ name }) => name === assetsChunkName
-        );
-        if (assetsChunkIndex > -1) {
-          compilation.chunks.splice(assetsChunkIndex, 1);
-        }
-      })
-      compilation.hooks.optimizeChunks.tap('MiniWebpackPlugin', chunks => {
-        for (const chunk of chunks) {
-          if (chunk.hasEntryModule()) {
-            // 记录模块之间依赖关系
-            for (const module of chunk.getModules()) {
-              if (!module.isEntryModule()) {
-                const resourcePath = module.resource
-                let relPath = utils.getDistPath(resourcePath)
-                let chunkName = chunk.name + '.js'
-                utils.setMapValue(DEPS_MAP, relPath, chunkName)
-
-                module._usedModules = DEPS_MAP[relPath]
-              }
-            }
-          }
-        }
-      })
-    })
+    // compiler.hooks.compilation.tap('MiniWebpackPlugin', compilation => {
+    //   compilation.hooks.beforeChunkAssets.tap('MiniWebpackPlugin', () => {
+    //     const assetsChunkIndex = compilation.chunks.findIndex(
+    //       ({ name }) => name === assetsChunkName
+    //     );
+    //     if (assetsChunkIndex > -1) {
+    //       compilation.chunks.splice(assetsChunkIndex, 1);
+    //     }
+    //   })
+    //   compilation.hooks.optimizeChunks.tap('MiniWebpackPlugin', chunks => {
+    //     for (const chunk of chunks) {
+    //       if (chunk.hasEntryModule()) {
+    //         // 记录模块之间依赖关系
+    //         for (const module of chunk.getModules()) {
+    //           if (!module.isEntryModule()) {
+    //             const resourcePath = module.resource
+    //             let relPath = utils.getDistPath(resourcePath)
+    //             let chunkName = chunk.name + '.js'
+    //             utils.setMapValue(DEPS_MAP, relPath, chunkName)
+    //
+    //             module._usedModules = DEPS_MAP[relPath]
+    //           }
+    //         }
+    //       }
+    //     }
+    //   })
+    // })
 
     const patterns = entryResources
       .map(resource => `${resource}.*`)
@@ -197,6 +440,19 @@ class MiniWebpackPlugin extends MinProgram {
     const { target } = compilation.options
     const commonChunkName = stripExt(commonModuleName)
     const globalVar = Targets[target.name].global
+    compilation.mainTemplate.hooks.render.tap('MinWebpackPlugin', (source, chunk, hash, moduleTemplate, dependencyTemplates) => {
+      const entryResources = this.entryResources
+      if (path.extname(chunk.entryModule.resource || '') === '.js' && entryResources.findIndex(({ name }) => name === chunk.name) > -1){
+        const source = new ConcatSource()
+        const globalRequire = 'require'
+        console.log(111111, chunk.name, `${this.base}/webpack-require.js`)
+        console.log(11111, chunk)
+        let webpackRequire = `${globalRequire}("${path.posix.relative(`${chunk.name}`, `webpack-require.js`)}")`.replace('../', './')
+        source.add(`var webpackRequire = ${webpackRequire};\n`)
+        return source
+      }
+      return source
+    })
 
     // compilation.mainTemplate.hooks.assetPath.tap('MinWebpackPlugin', (path) => {
     //   return utils.getDistPath(path)
@@ -208,36 +464,36 @@ class MiniWebpackPlugin extends MinProgram {
       callback()
     })
 
-    compilation.chunkTemplate.hooks.render.tap('MinWebpackPlugin', (core, chunk) => {
-      console.log(111111, this.entryResources, chunk.resource)
-      const absoluteEntryPath = this.entryResources.map(item => path.resolve(item))
-      if (absoluteEntryPath.indexOf(chunk.resource) >= 0) {
-        const relativePath = relative(dirname(name), `./webpack-require`)
-        const posixPath = relativePath.replace(/\\/g, '/')
-        const source = core.source()
+    // compilation.chunkTemplate.hooks.render.tap('MinWebpackPlugin', (core, chunk) => {
+    //   console.log(111111, this.entryResources, chunk, chunk.entryModule)
+    //   const absoluteEntryPath = this.entryResources.map(item => path.resolve(item))
+    //   if (absoluteEntryPath.indexOf(chunk.resource) >= 0) {
+    //     const relativePath = relative(dirname(name), `./webpack-require`)
+    //     const posixPath = relativePath.replace(/\\/g, '/')
+    //     const source = core.source()
+    //
+    //     // eslint-disable-next-line max-len
+    //     const injectContent = `webpackRequire = require("./${posixPath}"); \n `
+    //
+    //     if (source.indexOf(injectContent) < 0) {
+    //       const concatSource = new ConcatSource(core);
+    //       concatSource.add(injectContent)
+    //       return concatSource
+    //     }
+    //   }
+    //   return core
+    // })
 
-        // eslint-disable-next-line max-len
-        const injectContent = `webpackRequire = require("./${posixPath}"); \n webpackRequire(${chunk.id}, )`
-
-        if (source.indexOf(injectContent) < 0) {
-          const concatSource = new ConcatSource(core);
-          concatSource.add(injectContent)
-          return concatSource
-        }
-      }
-      return core
-    })
-
-    compilation.mainTemplate.hooks.bootstrap.tap('MinWebpackPlugin', (source, chunk) => {
-      const windowRegExp = new RegExp('window', 'g')
-      if (chunk.name === commonChunkName) {
-        return source.replace(windowRegExp, globalVar)
-      }
-      return source
-    })
-
-    // override `require.ensure()`
-    compilation.mainTemplate.hooks.requireEnsure.tap('MinWebpackPlugin', () => 'throw new Error("Not chunk loading available");')
+    // compilation.mainTemplate.hooks.bootstrap.tap('MinWebpackPlugin', (source, chunk) => {
+    //   const windowRegExp = new RegExp('window', 'g')
+    //   if (chunk.name === commonChunkName) {
+    //     return source.replace(windowRegExp, globalVar)
+    //   }
+    //   return source
+    // })
+    //
+    // // override `require.ensure()`
+    // compilation.mainTemplate.hooks.requireEnsure.tap('MinWebpackPlugin', () => 'throw new Error("Not chunk loading available");')
   }
 
   getChunkResourceRegExp() {
@@ -253,38 +509,6 @@ class MiniWebpackPlugin extends MinProgram {
       .map(ext => `(${ext}$)`)
       .join('|')
     return new RegExp(exts);
-  }
-
-  dealChunks(compiler) {
-    const entryFullPath = this.entryResources.map(this.getFullScriptPath.bind(this))
-    compiler.options.optimization.splitChunks = {
-      chunks: (chunk) => {
-        console.log(222222222, chunk.name)
-        return entryFullPath.find()
-      }
-    }
-      // minSize: 30000, // 最小尺寸，30000
-      // minChunks: 1, // 最小 chunk ，默认1
-      // maxAsyncRequests: 5, // 最大异步请求数， 默认5
-      // maxInitialRequests: 3, // 最大初始化请求书，默认3
-      // automaticNameDelimiter: '~',// 打包分隔符
-      // name: function () {
-      //   return this.options.commonModuleName
-      // }, // 打包后的名称，此选项可接收 function
-      // cacheGroups: { // 这里开始设置缓存的 chunks
-      //   priority: 0, // 缓存组优先级
-      //   vendor: { // key 为entry中定义的 入口名称
-      //     chunks: 'initial', // 必须三选一： "initial" | "all" | "async"(默认就是async)
-      //     test: /react|lodash/, // 正则规则验证，如果符合就提取 chunk
-      //     name: 'vendor', // 要缓存的 分隔出来的 chunk 名称
-      //     minSize: 30000,
-      //     minChunks: 1,
-      //     enforce: true,
-      //     maxAsyncRequests: 5, // 最大异步请求数， 默认1
-      //     maxInitialRequests: 3, // 最大初始化请求书，默认1
-      //     reuseExistingChunk: true // 可设置是否重用该chunk
-      //   }
-      // }
   }
 
   async run(compiler) {

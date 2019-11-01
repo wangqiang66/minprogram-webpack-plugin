@@ -104,11 +104,16 @@ Compilation 对象内部属性
   }
   
   semaphore: Semaphore // Semaphore对象 参数options.parallelism || 100 Modules的并行线程数
-
+  /** @type {Map<DepConstructor, ModuleFactory>} */
   dependencyFactories: Map // 在EntryPlugin hooks.compilation的时候将对应的入口放进去的
+  
+  /** @private @type {{name: string, request: string, module: Module}[]} Webpack5移除request属性 对Milti和Single进行了合并 */
+  _preparedEntrypoints: [] // 存放需要处理的entry对象
   entries: [] // 存放入口Module 
-   /** @private @type {{name: string, request: string, module: Module}[]} */
-  _preparedEntrypoints: []
+  /** @type {Module[]} */
+  modules: []
+  /** @private @type {Map<string, Module>} */
+  _modules: Map
 ```
 
 semaphore.acquire 保证函数的顺序的，队列存放回掉

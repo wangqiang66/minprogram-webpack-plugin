@@ -1,0 +1,32 @@
+<epp-layout-scroll kind="column" text-align="initial" vertical-align="initial" scroll-y>
+  <epp-search-bar
+     class-name="padding-inner-small-tb"
+     value="{{ search.searchWord }}"
+     focus="{{true}}"
+     disabled="{{false}}"
+     maxLength="{{20}}"
+     placeholder="搜索"
+     onInput="handleInput"
+     showCancelButton="{{false}}" /></epp-search-bar>
+  <epp-list class-name=" bg-color-white padding-text-t hairline hairline-top">
+    <epp-view class-name="list-title" slot="header">
+      基础信息
+    </epp-view>
+    <epp-form-item
+       class-name="hairline hairline-top"
+       type="pick"
+       label="所在城市"
+       required="{{ true }}"
+       placeholder="请选择所在城市"
+       list="{{ ['小学', '初中', '高中', '中专', '高专', '大学', '硕士'] }}"
+    ></epp-form-item>
+    <epp-form-item
+       type="pick"
+       label="业务品种"
+       required="{{ true }}"
+       placeholder="请选择业务品种"
+       list="{{ ['小学', '初中', '高中', '中专', '高专', '大学', '硕士'] }}"
+    ></epp-form-item>
+  </epp-list>
+  <epp-button class-name="next-step" type="primary-tint" shape="circle" onClick="onAutoFocus">下一步</epp-button>
+</epp-layout-scroll>

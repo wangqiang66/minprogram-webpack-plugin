@@ -1,0 +1,15 @@
+{
+  "defaultTitle": "业务工具",
+  "usingComponents": {
+    "epp-layout-scroll": "@ddjf/ddepp/packages/layout-scroll/index",
+    "epp-image": "@ddjf/ddepp/packages/image/index",
+    "epp-layout": "@ddjf/ddepp/packages/layout/index",
+    "epp-grid":"@ddjf/ddepp/packages/grid/index"
+  },
+  "window":{
+    "backgroundTextStyle":"light",
+    "navigationBarBackgroundColor": "#fff",
+    "navigationBarTitleText": "WeChat",
+    "navigationBarTextStyle":"black"
+  }
+}

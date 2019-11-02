@@ -1,0 +1,19 @@
+{
+  "defaultTitle": "费用计算器",
+  "usingComponents": {
+    "epp-layout-scroll": "@ddjf/ddepp/packages/layout-scroll/index",
+    "epp-view": "@ddjf/ddepp/packages/view/index",
+    "epp-layout": "@ddjf/ddepp/packages/layout/index",
+    "epp-icon": "@ddjf/ddepp/packages/icon/index",
+    "epp-form-item": "@ddjf/ddepp/packages/form-item/index",
+    "epp-list": "@ddjf/ddepp/packages/list/index",
+    "epp-button": "@ddjf/ddepp/packages/button/index",
+    "epp-input": "@ddjf/ddepp/packages/form-item/input/index"
+  },
+  "window":{
+    "backgroundTextStyle":"light",
+    "navigationBarBackgroundColor": "#fff",
+    "navigationBarTitleText": "WeChat",
+    "navigationBarTextStyle":"black"
+  }
+}

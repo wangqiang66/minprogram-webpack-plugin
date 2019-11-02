@@ -72,7 +72,7 @@ export default class MinProgram {
         component = resolve(componentDirPath, componentPath)
       }
 
-      if (components.findIndex(item => item.component !== component) < 0) {
+      if (components.findIndex(item => item.component === component) < 0) {
         const entryPath = path.posix.join(...path.relative(basePath, component).split(path.sep))
         components.push({
           component: component,

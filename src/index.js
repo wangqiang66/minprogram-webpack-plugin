@@ -12,11 +12,8 @@ import { ConcatSource, RawSource } from 'webpack-sources'
 import { Template } from 'webpack'
 import globby from 'globby'
 import MinProgram from './MinProgram'
-import utils from './utils'
 
 export const { Targets } = require('./Targets')
-
-const DEPS_MAP = {}
 
 const stripExt = path => {
   const { dir, name } = parse(path)
@@ -48,6 +45,9 @@ class MiniWebpackPlugin extends MinProgram {
 
   async apply(compiler) {
     this.initOptions(compiler)
+    compiler.hooks.environment.tap('MiniWebpackPlugin', () => {
+      this.prepareEnvironment(compiler)
+    })
     compiler.hooks.compilation.tap('MiniWebpackPlugin', this.setCompilation.bind(this))
     compiler.hooks.run.tapAsync('MiniWebpackPlugin',
       this.try(
@@ -72,14 +72,6 @@ class MiniWebpackPlugin extends MinProgram {
         await this.toAddTabBarIconsDependencies(compilation)
       }
     ))
-
-
-    // compiler.hooks.afterCompile.tapAsync('MiniWebpackPlugin',
-    //   this.try(
-    //     async compilation => {
-    //       console.log(44444444444, 'afterCompile', compilation)
-    //     }
-    //   ))
   }
 
   async toEmitTabBarIcons(compilation) {
@@ -112,13 +104,11 @@ class MiniWebpackPlugin extends MinProgram {
   addScriptEntry(compiler, entry, name) {
     compiler.hooks.make.tapAsync('MiniWebpackPlugin', (compilation, callback) => {
       const dep = SingleEntryPlugin.createDependency(entry, name)
-      // console.log(111111111, dep)
       compilation.addEntry(this.base, dep, name, callback)
     })
   }
 
   compileScripts(compiler) {
-    // this.applyCommonsChunk(compiler);
     this.entryResources
       .filter(({ name }) => name !== 'app')
       .forEach(({ path, name }) => {
@@ -157,6 +147,9 @@ class MiniWebpackPlugin extends MinProgram {
       ignore: [...extensions.map(ext => `**/*${ext}`), ...exclude],
       dot
     })
+    if (compiler.options.target.name === Targets.Wechat.name) {
+      entries.unshift('project.config.json')
+    }
     this.addEntries(compiler, entries, assetsChunkName)
   }
 
@@ -166,10 +159,8 @@ class MiniWebpackPlugin extends MinProgram {
 
   // 处理compilation
   setCompilation(compilation) {
-    const { commonModuleName, assetsChunkName } = this.options
-    const { target } = compilation.options
+    const { commonModuleName, assetsChunkName, definedSplitChunk } = this.options
     const commonChunkName = stripExt(commonModuleName)
-    const globalVar = Targets[target.name].global
 
     // 删除__assets_chunk_name__ 这个入口的打包文件，不需要打包出来
     compilation.hooks.beforeChunkAssets.tap('MinWebpackPlugin', () => {
@@ -187,15 +178,31 @@ class MiniWebpackPlugin extends MinProgram {
         const globalRequire = 'require'
         let webpackRequire = `${globalRequire}("${path.posix.relative(`${chunk.name}`, `webpack-require.js`)}")`.replace('../', './')
         source.add(`var webpackRequire = ${webpackRequire};\n`)
+        if (definedSplitChunk) {
+          const commonChunks = Array.from(chunk.entryModule._chunks)
+          commonChunks.map(commonChunkItem => {
+            const commonRequire = `${globalRequire}("${path.posix.relative(`${chunk.name}`, `${commonChunkItem.name}.js`)}")`.replace('../', './')
+            source.add(`var ${commonChunkItem.name} = ${commonRequire};\n`)
+          })
+        } else {
+          const commonRequire = `${globalRequire}("${path.posix.relative(`${chunk.name}`, `${commonChunkName}.js`)}")`.replace('../', './')
+          source.add(`var ${commonChunkName} = ${commonRequire};\n`)
+        }
         source.add(`webpackRequire(`)
         source.add(`${JSON.stringify(chunk.entryModule.id)}, `)
-        source.add(compilation.mainTemplate.hooks.modules.call(
-          new RawSource(""),
-          chunk,
-          hash,
-          moduleTemplate,
-          dependencyTemplates
-        ))
+        if (definedSplitChunk) {
+          const commonChunks = Array.from(chunk.entryModule._chunks)
+          source.add(`${commonChunkName}`, Object.assign(...commonChunks.map(commonChunkItem => commonChunkItem.name)))
+        } else {
+          source.add(`${commonChunkName}`)
+        }
+        // source.add(compilation.mainTemplate.hooks.modules.call(
+        //   new RawSource(""),
+        //   chunk,
+        //   hash,
+        //   moduleTemplate,
+        //   dependencyTemplates
+        // ))
         source.add(`)`)
         return source
       }
@@ -230,19 +237,35 @@ class MiniWebpackPlugin extends MinProgram {
     })
   }
 
-  getChunkResourceRegExp() {
-    if (this._chunkResourceRegex) {
-      return this._chunkResourceRegex;
-    }
+  // 对打包前的环境处理
+  prepareEnvironment(compiler) {
+    this.setOutputParams(compiler)
+    this.setCommonSplitChunk(compiler)
+  }
 
-    const {
-      options: { extensions }
-    } = this
-    const exts = extensions
-      .map(ext => ext.replace(/\./g, '\\.'))
-      .map(ext => `(${ext}$)`)
-      .join('|')
-    return new RegExp(exts);
+  // 处理output
+  setOutputParams(compiler) {
+    const { target } = compiler.options
+    const globalVar = Targets[target.name].global
+    compiler.options.output.libraryTarget = 'var'
+    compiler.options.output.globalObject = globalVar
+  }
+
+  // 处理公共部分提取
+  setCommonSplitChunk(compiler) {
+    const { commonModuleName, definedSplitChunk } = this.options
+    const commonChunkName = stripExt(commonModuleName)
+    if (!definedSplitChunk) {
+      compiler.options.optimization.splitChunks.cacheGroups[commonChunkName] = {
+        name: commonChunkName,
+        chunks: (chunk) => {
+          const ext = path.extname(chunk.entryModule.resource || '')
+          return ext === '.js'
+        },
+        minSize: 1,
+        priority: 0
+      }
+    }
   }
 
   async run(compiler) {

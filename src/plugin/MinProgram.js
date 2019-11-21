@@ -1,16 +1,20 @@
-import path, { parse, resolve } from 'path'
-import { readJson } from 'fs-extra'
-
 /**
  * function: 处理小程序的入口
  * author  : wq
  * update  : 2019/10/23 17:45
  */
+import path, { parse, resolve } from 'path'
+import { readJson, readFileSync } from 'fs-extra'
 import { getBasePath, setWebpackTarget } from './MinBase'
 import { values } from 'lodash'
 import MinOptions from './MinOptions'
+import { Targets } from './index'
+import sax from 'sax'
 
 const AbsolutePathExp = /^\//
+const ROOT_TAG_NAME = 'xxx-wxml-root-xxx'
+const ROOT_TAG_START = `<${ROOT_TAG_NAME}>`
+const ROOT_TAG_END = `</${ROOT_TAG_NAME}>`
 
 export default class MinProgram {
   constructor(options) {
@@ -82,7 +86,6 @@ export default class MinProgram {
         await this.getComponentsEntry(components, component)
       }
     }
-
   }
 
   // 获取tabbar的图片
@@ -150,5 +153,97 @@ export default class MinProgram {
       ...pageEntries,
       ...componentsEntries
     ]
+  }
+
+  // 获取xml相关的依赖，这里主要是指import-sjs或者微信的wxs或者其他
+  async getXMLResource(entries) {
+    const targetsTag = Object.keys(Targets).map(item => Targets[item].xjsTag)
+    const targetsName = Object.keys(Targets).map(item => `.${Targets[item].xmlName}`)
+    for (let i = 0, l = entries.length; i < l; i++) {
+      const entry = entries[i]
+      const extname = path.extname(entry)
+      if (targetsName.indexOf(extname) > -1) {
+        const source = readFileSync(`${resolve(this.base, entry)}`, 'utf8')
+        const xmlContent = `${ROOT_TAG_START}${source}${ROOT_TAG_END}`
+        const parser = sax.parser(false, { lowercase: true })
+        parser.onopentag = ({ name, attributes }) => {
+          // opened a tag.  node has "name" and "attributes"
+          // 使用了wxs
+          if (targetsTag.indexOf(name) > -1) {
+            const src = attributes.src
+            this.addSJSResource(entries, entry, src)
+          }
+        }
+        parser.write(xmlContent).close()
+      }
+    }
+  }
+
+  addSJSResource(entries, entry, url) {
+    const src = path.relative(this.base, path.resolve(this.base, path.dirname(entry), url)).replace(/\\/g, '\/')
+    if (entries.indexOf(src) < 0) {
+      entries.push(src)
+      this.getSJSResource(entries, src)
+    }
+  }
+
+  // 获取sjs里面的依赖，这里主要是依赖其他的sjs文件
+  async getSJSResource(entries, entry) {
+    const source = readFileSync(`${resolve(this.base, entry)}`, 'utf8')
+    const commentRegExp = /(\/\*([\s\S]*?)\*\/|([^:]|^)\/\/(.*)$)/mg;
+
+    function commentReplace(match, multi, multiText, singlePrefix) {
+      return singlePrefix || '';
+    }
+    const removeCommendSource = source.replace(commentRegExp, commentReplace)
+    // 获取里面的依赖 主要是require 和 import表达式
+    const importReg = /(?:^|\s|,|;|=)(?:import|require)\s*\(\s*['"]([\w./]+)['"]\s*\)/mg
+    removeCommendSource.replace(importReg, (match, url) => {
+      this.addSJSResource(entries, entry, url)
+      return match
+    })
+  }
+
+  // 获取acss和wxss相关的依赖
+  async getCSSResourceByEntries(entries) {
+    const targetsName = Object.keys(Targets).map(item => `.${Targets[item].cssName}`)
+    for (let i = 0, l = entries.length; i < l; i++) {
+      const entry = entries[i]
+      const extname = path.extname(entry)
+      if (targetsName.indexOf(extname) > -1) {
+        await this.getCSSResource(entries, entry)
+      }
+    }
+  }
+
+  // 添加css依赖
+  addCSSResource(entries, entry, url) {
+    let src
+    // 路径相对于的是base
+    if (url[0] === '/') {
+      src = path.relative(this.base, path.resolve(this.base, `.${url}`)).replace(/\\/g, '\/')
+    } else {
+      src = path.relative(this.base, path.resolve(this.base, path.dirname(entry), url)).replace(/\\/g, '\/')
+    }
+    if (entries.indexOf(src) < 0) {
+      entries.push(src)
+      this.getCSSResource(entries, src)
+    }
+  }
+
+  // 获取单个文件的依赖
+  async getCSSResource(entries, entry) {
+    const source = readFileSync(`${resolve(this.base, entry)}`, 'utf8')
+    const commentRegExp = /(\/\*([\s\S]*?)\*\/|([^:]|^)\/\/(.*)$)/mg;
+
+    function commentReplace(match, multi, multiText, singlePrefix) {
+      return singlePrefix || '';
+    }
+    const removeCommendSource = source.replace(commentRegExp, commentReplace)
+    const importReg = /(?:^|\s)(?:@import)\s*['"]([\w./]+)['"]\s*/mg
+    removeCommendSource.replace(importReg, (match, url) => {
+      this.addCSSResource(entries, entry, url)
+      return match
+    })
   }
 }

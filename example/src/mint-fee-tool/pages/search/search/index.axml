@@ -1,0 +1,16 @@
+<epp-layout kind="column" text-align="initial" vertical-align="initial">
+  <epp-search-bar
+     class-name="padding-inner-small-tb"
+     value="{{ search }}"
+     focus="{{ false }}"
+     maxLength="{{20}}"
+     placeholder="请输入订单号查询"
+     onInput="inputSearchWord"
+     onClear="clearSearchWord"
+     onSubmit="search"
+     onCancel="cancel" />
+  <epp-layout kind="column" text-align="center" a:if="{{ showNoData }}">
+    <view class="empty-list"></view>
+    <view class="color-cancel padding-normal-t">未找到相关订单</view>
+  </epp-layout>
+</epp-layout>

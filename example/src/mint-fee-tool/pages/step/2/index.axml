@@ -1,0 +1,49 @@
+<epp-layout class-name="full-parent-height absolute full-parent-width" kind="column" text-align="initial" vertical-align="initial" full="{{ false }}">
+  <epp-layout-scroll kind="column" text-align="initial" vertical-align="initial" scroll-y="{{ true }}">
+    <epp-list class-name=" bg-color-white padding-text-t hairline hairline-top">
+      <epp-view class-name="list-title" slot="header">
+        费率信息
+      </epp-view>
+      <block a:for="{{ feeConfigList }}">
+        <epp-form-item
+           key="base-info-{{item.feeMetadataCode}}-{{ item.componentType }}"
+           type="{{ item.componentType }}"
+           label="{{ item.feeMetadataName }}"
+           disabled="{{ item.isEditable === '0' }}"
+           value="{{ params[item.feeMetadataCode] }}"
+           data-name="{{ item.feeMetadataCode }}"
+           required="{{ true }}"
+           placeholder="{{ item.placeholder }}"
+           list="{{ paramsList[item.feeMetadataCode] }}"
+           onInput="inputOtherInfo"
+        ></epp-form-item>
+      </block>
+    </epp-list>
+    <epp-list class-name=" bg-color-white padding-text-t hairline hairline-top" a:if="{{ feeItemRegister.length > 0 }}">
+      <epp-view class-name="list-title" slot="header">
+        费项信息
+      </epp-view>
+      <block a:for="{{ feeItemRegister }}">
+        <epp-form-item
+           input-class="{{ item.isEditable === '1' ? '' : 'color-cancel' }}"
+           key="base-info-{{item.feeMetadataCode}}-{{ item.componentType }}"
+           type="{{ item.componentType }}"
+           disabled="{{ item.isEditable === '0' }}"
+           label="{{ item.feeMetadataName }}"
+           data-name="{{ item.feeMetadataCode }}"
+           value="{{ params[item.feeMetadataCode] || (item.isEditable === '0' ? item.value : '') }}"
+           list="{{ paramsList[item.feeMetadataCode] }}"
+           onInput="inputOtherInfo">
+          <epp-layout slot="label" data-label="{{ item.feeMetadataName }}" data-name="{{ item.feeMetadataCode }}" data-editable="{{ item.isEditable }}" data-defaultValue="{{ item.value }}" onClick="clickFeeExtend">
+            <epp-icon type="{{ chooseItem[item.feeMetadataCode] ? 'fa-icon-success' : 'fa-icon-circle' }}"></epp-icon>
+            <view class="padding-text-l">{{ item.feeMetadataName }}</view>
+          </epp-layout>
+        </epp-form-item>
+      </block>
+    </epp-list>
+  </epp-layout-scroll>
+  <epp-layout full="{{ false }}">
+    <epp-button class-name="flex1" type="primary" plain="{{ true }}" onClick="prevStep">上一步</epp-button>
+    <epp-button class-name="flex2" type="primary-tint" onClick="viewFee">查看费用</epp-button>
+  </epp-layout>
+</epp-layout>

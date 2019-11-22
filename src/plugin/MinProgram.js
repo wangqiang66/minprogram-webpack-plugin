@@ -12,6 +12,7 @@ import { Targets } from './index'
 import sax from 'sax'
 
 const AbsolutePathExp = /^\//
+const NotNodeNodulesExp = /^[./]/
 const ROOT_TAG_NAME = 'xxx-wxml-root-xxx'
 const ROOT_TAG_START = `<${ROOT_TAG_NAME}>`
 const ROOT_TAG_END = `</${ROOT_TAG_NAME}>`
@@ -57,25 +58,7 @@ export default class MinProgram {
     const componentsPath = values(usingComponents)
     for (const componentPath of componentsPath) {
       if (componentPath.indexOf('plugin://') === 0) continue
-      let component
-      if (!/^[./]/.test(componentPath)) {
-        component = resolve(basePath, '../node_modules', componentPath)
-      }
-      else if (AbsolutePathExp.test(componentPath)) {
-        if (/node_modules/.test(componentDirPath)) {
-          // 通常打包好的包名是
-          const packageName = ['lib', 'packages', 'dist', 'es', 'src'].join('\\\/|\\\/')
-          const packageNameExp = new RegExp(`\(\\\/${packageName}\\\/\)`)
-          const dir = componentDirPath.split(packageNameExp)[0] + RegExp.$1
-          component = resolve(dir, componentPath.substring(1))
-        } else {
-          component = resolve(basePath, componentPath.substring(1))
-        }
-      }
-      else {
-        component = resolve(componentDirPath, componentPath)
-      }
-
+      let component = this.getAbsoultePath(componentPath, componentDirPath)
       if (components.findIndex(item => item.component === component) < 0) {
         const entryPath = path.posix.join(...path.relative(basePath, component).split(path.sep))
         components.push({
@@ -86,6 +69,33 @@ export default class MinProgram {
         await this.getComponentsEntry(components, component)
       }
     }
+  }
+
+  getAbsoultePath(_path, currentFileDir) {
+    const base = this.base
+    if (!path.isAbsolute(currentFileDir)) {
+      currentFileDir = path.resolve(base, currentFileDir)
+    }
+    let finalPath
+    if (!NotNodeNodulesExp.test(_path)) {
+      finalPath = resolve(base, '../node_modules', _path)
+    }
+    else if (AbsolutePathExp.test(_path)) {
+      // 组件库中使用/相对的是组件库的目录
+      if (/node_modules/.test(currentFileDir)) {
+        // 通常打包好的包名是
+        const packageName = ['lib', 'packages', 'dist', 'es', 'src'].join('\\\/|\\\/')
+        const packageNameExp = new RegExp(`\(\\\/${packageName}\\\/\)`)
+        const dir = currentFileDir.split(packageNameExp)[0] + RegExp.$1
+        finalPath = resolve(dir, _path.substring(1))
+      } else {
+        finalPath = resolve(base, _path.substring(1))
+      }
+    }
+    else {
+      finalPath = resolve(currentFileDir, _path)
+    }
+    return finalPath
   }
 
   // 获取tabbar的图片
@@ -180,7 +190,8 @@ export default class MinProgram {
   }
 
   addSJSResource(entries, entry, url) {
-    const src = path.relative(this.base, path.resolve(this.base, path.dirname(entry), url)).replace(/\\/g, '\/')
+    const entryPath = this.getAbsoultePath(url, path.dirname(entry))
+    const src = path.relative(this.base, entryPath).replace(/\\/g, '\/')
     if (entries.indexOf(src) < 0) {
       entries.push(src)
       this.getSJSResource(entries, src)
@@ -218,13 +229,8 @@ export default class MinProgram {
 
   // 添加css依赖
   addCSSResource(entries, entry, url) {
-    let src
-    // 路径相对于的是base
-    if (url[0] === '/') {
-      src = path.relative(this.base, path.resolve(this.base, `.${url}`)).replace(/\\/g, '\/')
-    } else {
-      src = path.relative(this.base, path.resolve(this.base, path.dirname(entry), url)).replace(/\\/g, '\/')
-    }
+    const entryPath = this.getAbsoultePath(url, path.dirname(entry))
+    const src = path.relative(this.base, entryPath).replace(/\\/g, '\/')
     if (entries.indexOf(src) < 0) {
       entries.push(src)
       this.getCSSResource(entries, src)

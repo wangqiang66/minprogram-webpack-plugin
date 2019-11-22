@@ -4,14 +4,14 @@
  * update  : 2019/11/19 15:41
  */
 import { Targets } from '../plugin/Targets'
-import sax from 'sax'
+// import sax from 'sax'
 
 const ROOT_TAG_NAME = 'xxx-wxml-root-xxx'
 const ROOT_TAG_START = `<${ROOT_TAG_NAME}>`
 const ROOT_TAG_END = `</${ROOT_TAG_NAME}>`
 const ROOT_TAG_LENGTH = ROOT_TAG_START.length
 
-class MiniXMLLoader {
+export default class MiniXMLLoader {
   constructor(loader, source) {
     this.loader = loader
     this.source = source
@@ -32,7 +32,6 @@ class MiniXMLLoader {
     content = this.transformAttribute(content)
     content = this.transformEvent(content)
     content = this.transformEventPrevent(content)
-    console.log(11111111, content)
     this.callback(null, content)
     // const xmlContent = `${ROOT_TAG_START}${content}${ROOT_TAG_END}`
     // const parser = sax.parser(false, { lowercase: true })
@@ -140,7 +139,7 @@ class MiniXMLLoader {
     // 这个需要特殊处理 对于微信bind可以加或者不加:后面的事件属性小写
     const target = this.target
     const xmlEventReg = /(\s)(?:bind:?([a-z])|on([A-Z]))/mg
-    if (target.name = Targets.Wechat.name) {
+    if (target.name === Targets.Wechat.name) {
       return source.replace(xmlEventReg, `$1${target.xmlEvent}${'$2'.toLowerCase()}`)
     } else {
       return source.replace(xmlEventReg, `$1${target.xmlEvent}${'$2'.toUpperCase()}`)
@@ -150,15 +149,10 @@ class MiniXMLLoader {
   transformEventPrevent(source) {
     const target = this.target
     const xmlEventReg = /(\s)catch:?([a-zA-Z])/mg
-    if (target.name = Targets.Wechat.name) {
+    if (target.name === Targets.Wechat.name) {
       return source.replace(xmlEventReg, `$1${target.xmlEventPrevent}${'$2'.toLowerCase()}`)
     } else {
       return source.replace(xmlEventReg, `$1${target.xmlEventPrevent}${'$2'.toUpperCase()}`)
     }
   }
-}
-
-export default function (source) {
-  this.cacheable && this.cacheable()
-  return new MiniXMLLoader(this, source)
 }

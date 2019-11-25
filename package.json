@@ -1,6 +1,6 @@
 {
   "name": "@ddjf/minprogram-webpack-plugin",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "main": "lib/index.js",
   "scripts": {
     "start": "jest test --watch",
@@ -10,7 +10,7 @@
     "prebuild11": "rimraf ./lib && mkdirp ./lib",
     "build:watch": "babel src --out-dir lib -w",
     "build": "babel src --out-dir lib",
-    "preversion": "yarn test && yarn build"
+    "preversion1": "yarn test && yarn build"
   },
   "dependencies": {
     "lodash": "^4.17.15",

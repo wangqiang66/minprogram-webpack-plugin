@@ -30,8 +30,110 @@
    - wxss 可以不用转换，也可以在loader中处理对应引入的文件
    
 ## 使用说明
+具体的可以看demo
 
+1. 引入包"@ddjf/minprogram-webpack-plugin"
 
+2. 配置webpack.config.js
+
+```js
+const { resolve } = require('path')
+const { DefinePlugin } = require('webpack')
+const pkg = require('./package.json')
+const CopyPlugin = require('copy-webpack-plugin')
+const { MiniWebpackPlugin: WXAppWebpackPlugin, Targets, PreFileLoader } = require('@ddjf/minprogram-webpack-plugin')
+const srcDir = resolve('src');
+const processEnv = require(`./config/${process.env.NODE_MODE || 'dev'}.env`)
+const isDev = processEnv.NODE_ENV !== 'production';
+
+const copyPatterns = []
+  .concat(pkg.copyWebpack || [])
+  .map((pattern) => {
+    return typeof pattern === 'string' ? { from: pattern, to: pattern } : pattern
+  });
+
+module.exports = (env = {}) => {
+  const Target = Targets[env.target]
+
+  return {
+    mode: isDev ? 'development' : 'production',
+    entry: {
+      app: './src/app.js'
+    },
+    output: {
+      filename: '[name].js',
+      publicPath: '/',
+      path: resolve('dist'),
+    },
+    optimization: {
+      minimize: !isDev
+    },
+    target: Target.target,
+    module: {
+      rules: [
+        {
+          test: /\.js$/,
+          use: [
+            'babel-loader'
+          ]
+        },
+        {
+          test: /\.(scss|sass)$/,
+          use: [
+            PreFileLoader(Target, srcDir, Target.cssName),
+            'postcss-loader',
+            {
+              loader: 'sass-loader'
+            }
+          ]
+        },
+        {
+          test: /\.(wxss|acss)$/,
+          use: [
+            PreFileLoader(Target, srcDir, Target.cssName),
+            '@ddjf/minprogram-webpack-plugin'
+          ]
+        },
+        {
+          test: /\.(wxs|sjs)$/,
+          use: [
+            PreFileLoader(Target, srcDir, Target.xjsName),
+            '@ddjf/minprogram-webpack-plugin',
+            'babel-loader'
+          ]
+        },
+        {
+          test: /\.json$/,
+          type: 'javascript/auto',
+          use: PreFileLoader(Target, srcDir)
+        },
+        {
+          test: /\.(axml|wxml)/,
+          use: [
+            PreFileLoader(Target, srcDir, Target.xmlName),
+            '@ddjf/minprogram-webpack-plugin'
+          ]
+        },
+        {
+          test: /\.(png|jpg|gif)$/,
+          use: PreFileLoader(Target, srcDir)
+        }
+      ]
+    },
+    plugins: [
+      new DefinePlugin({
+        wx: Target.global,
+        my: Target.global,
+        dd: Target.global,
+        getCurrentPages: 'getCurrentPages'
+      }),
+      new WXAppWebpackPlugin(),
+      new CopyPlugin(copyPatterns, { context: srcDir }),
+    ].filter(Boolean)
+  }
+}
+```
+3. 构建script命令
 
 ## 建议
 

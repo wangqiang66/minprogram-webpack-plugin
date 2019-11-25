@@ -1,0 +1,44 @@
+$color-primary          : #2d8cf0;
+$color-primary-tint     : linear-gradient(135deg,rgba(0,198,251,1) 0%,rgba(0,91,234,1) 100%);
+$color-info             : #2db7f5;
+$color-success          : #19be6b;
+$color-warning          : #ff9900;
+$color-badge-text       : #fff;
+$color-error            : #ed3f14;
+$color-link             : #2D8cF0;
+$color-notice-bg        : #fefceb;
+$color-brand-bg         : #fff;
+$color-gray             : #b5b5b5;
+$color-link-hover       : tint($color-link, 20%);
+$color-link-active      : shade($color-link, 5%);
+$color-selected         : fade($color-primary, 90%);
+$color-tooltip          : #fff;
+$color-subsidiary       : #80848f;
+$color-rate-star        : #f5a623;
+$color-title-sm         : #191F25;
+$color-cancel         : rgba(0,0,0,0.4);
+
+$color-title            : #1c2438;
+$color-text             : #495060;
+
+$background-color-base  : #f7f7f7;
+$color-label            : #888888;
+
+$border-color-base      : #dddee1;
+$border-color-split     : #e9eaec;
+
+$list-item-hover-color  : #f8f8f8;
+
+$color-primary: #108ee9; // 品牌色
+$color-error: #ff3b30; // 错误提示
+$color-emphasis: #f24724; // 强调色
+$color-gradient: #0a73cf; // 渐变品牌色
+
+
+$color-text-base: #000;  // 基本文字
+$color-link: $color-primary; // 链接
+$color-text-title: #333; // 标题
+$color-text-caption: #999; // 副文本
+$color-text-dark: #ccc; // 暗文字
+
+$color-form-label: #191F25;

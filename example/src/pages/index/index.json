@@ -1,10 +1,8 @@
 {
   "defaultTitle": "业务工具",
   "usingComponents": {
-    "epp-layout-scroll": "@ddjf/ddepp/packages/layout-scroll/index",
-    "epp-image": "@ddjf/ddepp/packages/image/index",
-    "epp-layout": "@ddjf/ddepp/packages/layout/index",
-    "epp-grid":"@ddjf/ddepp/packages/grid/index"
+    "van-grid": "vant-weapp/dist/grid/index",
+    "van-grid-item": "vant-weapp/dist/grid-item/index"
   },
   "window":{
     "backgroundTextStyle":"light",

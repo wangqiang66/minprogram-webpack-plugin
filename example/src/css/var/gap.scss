@@ -1,0 +1,23 @@
+$gap-base-num      : 30;
+$gap-outer-num     : 20;
+$gap-inner-num     : 20;
+
+$gap               : $gap-base-num + px;
+$gap-outer         : $gap-outer-num + px;
+$gap-inner         : $gap-inner-num + px;
+$gap-small         : $gap-base-num / 2 + px;
+$gap-inner-small   : $gap-inner-num / 2 + px;
+$gap-big           : 50px;
+$gap-text          : 10px;
+$gap-small-text    : 5px;
+$gap-min-text      : 3px;
+
+$gap-line          : 1px;
+$gap-line-after    : 2px;
+$gap-line-weight   : 6px;
+
+$gap-badge-height  : 30px;
+$gap-badge-dot-height: 20px;
+$gap-cell-min-height: 78px;
+
+

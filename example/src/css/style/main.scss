@@ -1,0 +1,19 @@
+/**
+ * function: main
+ * author  : wq
+ * update  : 2019/4/28 18:23
+ */
+@import '../var/main';
+view, text, input, label, textarea, button, radio, checkbox, switch, slider, navigator, gropress, swiper, scroll-view {
+  font-size: $font-size;
+  box-sizing: border-box;
+}
+page {
+  background-color: $background-color-base;
+}
+@import 'layout';
+@import 'hairline';
+@import 'distance';
+@import 'border';
+@import 'color';
+@import 'font';

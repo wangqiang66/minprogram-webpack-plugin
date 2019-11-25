@@ -1,11 +1,10 @@
-<epp-layout-scroll kind="column" text-align="initial" vertical-align="initial" scroll-y>
-  <block a:if="{{ show }}">
-    <epp-image src="https://cdn.ddjf.com/static/images/epp_tools/banner.png" class-name="full-parent-width" />
-    <epp-layout class-name="grid-wrap">
-      <epp-grid onGridItemClick="onItemClick" columnNum="{{2}}" list="{{list}}" has-line="{{ false }}"></epp-grid>
-    </epp-layout>
+<view>
+  <block wx:if="{{ show }}">
+    <van-grid column-num="3">
+      <van-grid-item wx:for="{{ list }}" icon="{{ item.src }}" text="{{ item.text }}" />
+    </van-grid>
   </block>
-  <block a:else>
+  <block wx:else>
     <image class="loading-img" mode="aspectFit" src="https://cdn.ddjf.com/static/images/epp_tools/Spin-1s-200px.gif" ></image>
   </block>
-</epp-layout-scroll>
+</view>

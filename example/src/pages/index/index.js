@@ -3,10 +3,10 @@
  * author  : wq
  * update  : 2019/5/23 16:15
  */
-import { connect } from '@ddjf/ddepp/src/utils/epp-redux/index'
+import { connect } from '@ddjf/minprogram-redux'
 
 const mapStateToData = state => ({
-  show: !!state.session.session,
+  show: true,
   list: [
     {
       src: 'https://cdn.ddjf.com/static/images/epp_tools/icon-zzcp.png',

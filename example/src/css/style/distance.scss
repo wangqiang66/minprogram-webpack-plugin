@@ -1,0 +1,40 @@
+@import '../var/main';
+
+@mixin setDistance() {
+  $gapArray: ('normal': $gap, 'small': $gap-small, 'inner': $gap-inner, 'inner-small': $gap-inner-small, 'outer': $gap-outer, 'text': $gap-text);
+  $marArray: ('margin', 'padding');
+  @for $i from 1 to length($marArray) + 1 {
+    $marItem: nth($marArray,$i);
+    $marItemTop: "#{$marItem}-top";
+    $marItemBottom: "#{$marItem}-bottom";
+    $marItemLeft: "#{$marItem}-left";
+    $marItemRight: "#{$marItem}-right";
+    @each $j, $gap in $gapArray {
+      ".#{$marItem}-#{$j}" {
+        #{$marItem}: $gap;
+      }
+      ".#{$marItem}-#{$j}-tb" {
+        #{$marItemTop}: $gap;
+        #{$marItemBottom}: $gap;
+      }
+      ".#{$marItem}-#{$j}-t" {
+        #{$marItemTop}: $gap;
+      }
+      ".#{$marItem}-#{$j}-b" {
+        #{$marItemBottom}: $gap;
+      }
+      ".#{$marItem}-#{$j}-rl" {
+        #{$marItemRight}: $gap;
+        #{$marItemLeft}: $gap;
+      }
+      ".#{$marItem}-#{$j}-r" {
+        #{$marItemRight}: $gap;
+      }
+      ".#{$marItem}-#{$j}-l" {
+        #{$marItemLeft}: $gap;
+      }
+    }
+  }
+}
+
+@include setDistance()

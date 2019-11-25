@@ -3,9 +3,9 @@
  * author  : wq
  * update  : 2019/11/21 15:05
  */
-import MiniXMLLoader from './xml-loader'
-import MiniSJSLoader from './sjs-loader'
-import MiniCssLoader from './css-loader'
+import MiniXMLLoader from './xmlLoader'
+import MiniSJSLoader from './sjsLoader'
+import MiniCssLoader from './cssLoader'
 import path from 'path'
 import { Targets } from '../plugin/Targets'
 

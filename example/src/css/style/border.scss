@@ -1,0 +1,20 @@
+@import '../var/main';
+
+.border {
+  border: 1px solid $border-color-base;
+  &-top {
+    border-top: 1px solid $border-color-base;
+  }
+
+  &-right {
+    border-right: 1px solid $border-color-base;
+  }
+
+  &-bottom {
+    border-bottom: 1px solid $border-color-base;
+  }
+
+  &-left {
+    border-left: 1px solid $border-color-base;
+  }
+}

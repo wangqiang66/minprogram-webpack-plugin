@@ -1,0 +1,32 @@
+@import '../var/main';
+
+.color {
+  &-white {
+    color: $color-badge-text;
+  }
+  &-error {
+    color: $color-error;
+  }
+  &-cancel{
+    color: $color-cancel;
+  }
+  &-warning {
+    color: $color-warning
+  }
+}
+
+.bg-color {
+  &-white {
+    background-color: $color-badge-text;
+  }
+
+  &-error {
+    background-color: $color-error;
+  }
+  &-cancel{
+    background-color: $color-cancel;
+  }
+  &-warning {
+    background-color: $color-warning
+  }
+}

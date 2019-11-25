@@ -1,0 +1,26 @@
+@import '../var/main';
+
+.font {
+  &-normal {
+    font-size: $font-size;
+  }
+  &-small {
+    font-size: $font-size-small;
+  }
+  &-title-sm {
+    font-size: $font-size-title-sm;
+  }
+  &-title-lg {
+    font-size: $font-size-title-lg;
+  }
+  &-small-extra {
+    font-size: $font-size-extra-small;
+  }
+  &-tips {
+    font-size: $font-tips-base;
+  }
+
+  &-amount {
+    font-size: $font-size-amount;
+  }
+}

@@ -4,6 +4,7 @@
  * update  : 2019/8/1 18:16
  */
 
-import createStore from '@/redux/createStore'
+import { createStore } from '@ddjf/minprogram-redux'
+import reducer from '@/redux/reducers'
 
-export default createStore()
+export default createStore(reducer)

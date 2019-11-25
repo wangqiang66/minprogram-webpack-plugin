@@ -17,6 +17,7 @@
     "build:uat": "cross-env NODE_MODE=uat webpack --env.target=Alipay --env.min",
     "build:prod": "cross-env NODE_MODE=prod webpack --env.target=Alipay --env.min",
     "build:wechat": "cross-env NODE_ENV=production webpack --env.target=Wechat --env.min",
+    "start:wechat": "cross-env NODE_ENV=development NODE_MODE=dev webpack --watch --env.target=Wechat",
     "build:alipay": "cross-env NODE_ENV=production webpack --env.target=Alipay --env.min",
     "lint:watch": "cross-env LINT=true run-s start",
     "lint:build": "cross-env LINT=true run-s build",
@@ -30,12 +31,9 @@
     "doc": "doc"
   },
   "dependencies": {
-    "@ddjf/ddepp": "^1.0.5",
-    "flyio": "^0.6.14",
-    "redux": "^4.0.1",
-    "redux-logger": "^3.0.6",
-    "redux-promise-middleware": "^6.1.0",
-    "redux-thunk": "^2.3.0"
+    "@ddjf/minprogram-redux": "^1.0.10",
+    "vant-weapp": "^1.0.0-beta.3",
+    "flyio": "^0.6.14"
   },
   "devDependencies": {
     "@babel/cli": "^7.1.5",

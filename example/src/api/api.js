@@ -4,7 +4,6 @@
  * update  : 2018/9/5 9:29
  */
 import wx from 'wx'
-import Fly from 'flyio/dist/npm/fly'
 import AppConfig from '@/config/index'
 import { getLocalSession, removeLocalSession, getUserSession } from '../api/index'
 
@@ -13,24 +12,21 @@ let fly
 let sessionFly
 let requestTime = 1
 if (process.env.ENV_CONFIG === 'prod') {
-  const EngineWrapper = require('flyio/dist/npm/engine-wrapper')
-  const mock = require('@ddjf/ddepp/src/utils/epp-flyio/epp').default
-  const engine = EngineWrapper(mock)
-  fly = new Fly(engine)
-  sessionFly = new Fly(engine)
+  const Fly = require('flyio/dist/npm/wx')
+  fly = new Fly()
+  sessionFly = new Fly()
 } else {
   if (AppConfig.debug) {
+    const Fly = require('flyio/dist/npm/fly')
     const EngineWrapper = require('flyio/dist/npm/engine-wrapper')
     const mock = require('../api/mock').default
     const engine = EngineWrapper(mock)
     fly = new Fly(engine)
     sessionFly = new Fly(engine)
   } else {
-    const EngineWrapper = require('flyio/dist/npm/engine-wrapper')
-    const mock = require('@ddjf/ddepp/src/utils/epp-flyio/epp').default
-    const engine = EngineWrapper(mock)
-    fly = new Fly(engine)
-    sessionFly = new Fly(engine)
+    const Fly = require('flyio/dist/npm/wx')
+    fly = new Fly()
+    sessionFly = new Fly()
   }
 }
 

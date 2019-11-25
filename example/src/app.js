@@ -1,6 +1,5 @@
 // app.js
-import { Provider } from '@ddjf/ddepp/src/utils/epp-redux'
-import { setApp } from '@ddjf/ddepp/src/utils/dd/dd';
+import { Provider } from '@ddjf/minprogram-redux'
 import store from '@/redux/store'
 import { getUserInfo } from '@/api'
 
@@ -14,21 +13,15 @@ if (!Promise.prototype.finally || typeof Promise.prototype.finally !== 'function
   }
 }
 
-
 App(Provider(store)({
   currentPage: null,
   eventFlag: false,
   onLaunch(options) {
-    console.log('开始启动E应用')
-    setApp(this)
-    return getUserInfo()
-      .then(() => {
-        this.eventFlag = true
-        this.currentPage && typeof this.currentPage.getData === 'function' && this.currentPage.getData()
-      })
-  },
-
-  globalData: {
-    detailedInfo: {}
+    console.log('开始启动小程序')
+    // return getUserInfo()
+    //   .then(() => {
+    //     this.eventFlag = true
+    //     this.currentPage && typeof this.currentPage.getData === 'function' && this.currentPage.getData()
+    //   })
   }
 }))

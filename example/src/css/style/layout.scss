@@ -1,0 +1,84 @@
+/**
+ * function: main
+ * author  : wq
+ * update  : 2019/4/28 18:23
+ */
+
+ .row {
+  display: flex;
+  flex-direction: row;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-middle {
+  align-items: center
+}
+
+.flex-end {
+  align-items: flex-end
+}
+
+.flex-baseline {
+  align-items: baseline;
+}
+
+.flex-stretch {
+  align-items: stretch
+}
+
+.flex-center {
+  justify-content: center;
+}
+
+.flex-right {
+  justify-content: flex-end;
+}
+
+.flex-between {
+  justify-content: space-between;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+.relative{
+  position: relative;
+}
+
+.absolute {
+  position: absolute;
+}
+
+@mixin setFlex($len: 24) {
+  @for $i from 1 through  $len {
+  ".flex#{$i}" {
+    flex: $i
+  }
+  }
+}
+@include setFlex();
+
+.full-parent-width {
+  width: 100%;
+}
+
+.full-parent-height {
+  height: 100%;
+}

@@ -1,0 +1,20 @@
+@import '../var/main';
+
+.hairline {
+  position: relative;
+  &-top::after {
+    @include hairline(top)
+  }
+
+  &-right::after {
+    @include hairline(right)
+  }
+
+  &-bottom::after {
+    @include hairline(bottom)
+  }
+
+  &-left::after {
+    @include hairline(left)
+  }
+}

@@ -4,10 +4,9 @@ const { resolve, extname } = require('path')
 const { DefinePlugin, EnvironmentPlugin, IgnorePlugin, optimize } = require('webpack')
 const pkg = require('./package.json')
 const CopyPlugin = require('copy-webpack-plugin')
-const { default: WXAppWebpackPlugin, Targets } = require('@ddjf/minprogram-webpack-plugin')
+const { MiniWebpackPlugin: WXAppWebpackPlugin, Targets } = require('@ddjf/minprogram-webpack-plugin')
 const srcDir = resolve('src');
 const processEnv = require(`./config/${process.env.NODE_MODE || 'dev'}.env`)
-const shouldLint = !!processEnv.LINT && processEnv.LINT !== 'false';
 const isDev = processEnv.NODE_ENV !== 'production';
 
 const copyPatterns = []
@@ -40,9 +39,12 @@ module.exports = (env = {}) => {
         context: srcDir,
         outputPath(path, resourcePath, context) {
           if (/node_modules/.test(path)) {
-            return `node_modules${path.split('node_modules')[1]}`
+            if (Target.name === Targets.Wechat.name) {
+              return `miniprogram_npm${path.split('node_modules')[1]}`
+            } else {
+              return `node_modules${path.split('node_modules')[1]}`
+            }
           }
-          console.log(path, resourcePath, context)
           return path
         }
       }
@@ -57,25 +59,10 @@ module.exports = (env = {}) => {
     output: {
       filename: '[name].js',
       publicPath: '/',
-      libraryTarget: 'var',
-      globalObject: 'dd',
       path: resolve('dist'),
     },
     optimization: {
-      minimize: false,
-      splitChunks: {
-        cacheGroups: {
-          common: {
-            name: "common",
-            chunks: (chunk) => {
-              const ext = extname(chunk.entryModule.resource || '')
-              return ext === '.js'
-            },
-            minSize: 1,
-            priority: 0
-          }
-        }
-      }
+      minimize: false
     },
     target: Target.target,
     module: {
@@ -97,13 +84,31 @@ module.exports = (env = {}) => {
           ]
         },
         {
+          test: /\.(wxss|acss)$/,
+          use: [
+            relativeFileLoader(Target.cssName),
+            '@ddjf/minprogram-webpack-plugin'
+          ]
+        },
+        {
+          test: /\.(wxs|sjs)$/,
+          use: [
+            relativeFileLoader(Target.xjsName),
+            '@ddjf/minprogram-webpack-plugin',
+            'babel-loader'
+          ]
+        },
+        {
           test: /\.json$/,
           type: 'javascript/auto',
           use: relativeFileLoader()
         },
         {
           test: /\.(axml|wxml)/,
-          use: relativeFileLoader()
+          use: [
+            relativeFileLoader(Target.xmlName),
+            '@ddjf/minprogram-webpack-plugin'
+          ]
         },
         {
           test: /\.(png|jpg|gif)$/,
@@ -114,19 +119,13 @@ module.exports = (env = {}) => {
     plugins: [
       new EnvironmentPlugin(processEnv),
       new DefinePlugin({
-        __DEV__: isDev,
-        __WECHAT__: Target.name === Targets.Wechat.name,
-        __ALIPAY__: Target.name === Targets.Alipay.name,
         wx: Target.global,
         my: Target.global,
         dd: Target.global,
         getCurrentPages: 'getCurrentPages'
       }),
 
-      new WXAppWebpackPlugin({
-        clear: !isDev,
-        node_modules: '../node_modules'
-      }),
+      new WXAppWebpackPlugin(),
       new optimize.ModuleConcatenationPlugin(),
       new IgnorePlugin(/vertx/),
       new CopyPlugin(copyPatterns, { context: srcDir }),

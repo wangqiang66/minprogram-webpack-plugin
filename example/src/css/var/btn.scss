@@ -1,0 +1,26 @@
+@import './color';
+
+$btn-size: 30px;
+$btn-size-small: 26px;
+$btn-size-large: 34px;
+$btn-height: 88px;
+$btn-height-small: 80px;
+$btn-height-large: 96px;
+$btn-border-radius: 8px;
+$btn-border-radius-small: 6px;
+$btn-border-radius-large: 10px;
+
+$btn-primary-color: #fff;
+$btn-primary-bg: $color-primary;
+
+$btn-disable-color: #bbbec4;
+$btn-disable-bg: $background-color-base;
+$btn-disable-border: $border-color-base;
+
+$btn-default-color      : $color-text;
+$btn-default-bg         : $background-color-base;
+$btn-default-border     : $border-color-base;
+
+$btn-ghost-color        : $color-text;
+$btn-ghost-bg           : transparent;
+$btn-ghost-border       : $border-color-base;

@@ -31,6 +31,7 @@
     "doc": "doc"
   },
   "dependencies": {
+    "@ddjf/minprogram-webpack-plugin": "^0.0.5",
     "@ddjf/minprogram-redux": "^1.0.10",
     "vant-weapp": "^1.0.0-beta.3",
     "flyio": "^0.6.14"

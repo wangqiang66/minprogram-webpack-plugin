@@ -11,6 +11,8 @@
  * @param ext
  * @returns {*}
  */
+import { Targets } from '../plugin/Targets'
+
 export default function (target, output, ext = '[ext]') {
   const namePrefix = '[path]'
   return {
@@ -19,9 +21,9 @@ export default function (target, output, ext = '[ext]') {
       useRelativePath: false,
       name: `${namePrefix}[name].${ext}`,
       context: output,
-      outputPath(path, resourcePath, context) {
+      outputPath(path) {
         if (/node_modules/.test(path)) {
-          if (Target.name === Targets.Wechat.name) {
+          if (target.name === Targets.Wechat.name) {
             return `miniprogram_npm${path.split('node_modules')[1]}`
           } else {
             return `node_modules${path.split('node_modules')[1]}`

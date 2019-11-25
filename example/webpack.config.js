@@ -1,10 +1,10 @@
 // import StylelintPlugin from 'stylelint-webpack-plugin';
 // import CopyPlugin from 'copy-webpack-plugin';
-const { resolve, extname } = require('path')
+const { resolve } = require('path')
 const { DefinePlugin, EnvironmentPlugin, IgnorePlugin, optimize } = require('webpack')
 const pkg = require('./package.json')
 const CopyPlugin = require('copy-webpack-plugin')
-const { MiniWebpackPlugin: WXAppWebpackPlugin, Targets } = require('@ddjf/minprogram-webpack-plugin')
+const { MiniWebpackPlugin: WXAppWebpackPlugin, Targets, PreFileLoader } = require('@ddjf/minprogram-webpack-plugin')
 const srcDir = resolve('src');
 const processEnv = require(`./config/${process.env.NODE_MODE || 'dev'}.env`)
 const isDev = processEnv.NODE_ENV !== 'production';
@@ -15,44 +15,11 @@ const copyPatterns = []
     return typeof pattern === 'string' ? { from: pattern, to: pattern } : pattern
   });
 
-const createLintingRule = () => ({
-  test: /\.(js|wxs)$/,
-  loader: 'eslint-loader',
-  enforce: 'pre',
-  include: [resolve('src'), resolve('test')],
-  options: {
-    formatter: require('eslint-friendly-formatter'),
-  }
-})
-
 module.exports = (env = {}) => {
-  const min = env.min;
   const Target = Targets[env.target]
 
-  const relativeFileLoader = (ext = '[ext]') => {
-    const namePrefix = '[path]'
-    return {
-      loader: 'file-loader',
-      options: {
-        useRelativePath: false,
-        name: `${namePrefix}[name].${ext}`,
-        context: srcDir,
-        outputPath(path, resourcePath, context) {
-          if (/node_modules/.test(path)) {
-            if (Target.name === Targets.Wechat.name) {
-              return `miniprogram_npm${path.split('node_modules')[1]}`
-            } else {
-              return `node_modules${path.split('node_modules')[1]}`
-            }
-          }
-          return path
-        }
-      }
-    }
-  }
-
   return {
-    mode: 'development',
+    mode: isDev ? 'development' : 'production',
     entry: {
       app: './src/app.js'
     },
@@ -62,7 +29,7 @@ module.exports = (env = {}) => {
       path: resolve('dist'),
     },
     optimization: {
-      minimize: false
+      minimize: !isDev
     },
     target: Target.target,
     module: {
@@ -76,7 +43,7 @@ module.exports = (env = {}) => {
         {
           test: /\.(scss|sass)$/,
           use: [
-            relativeFileLoader(Target.cssName),
+            PreFileLoader(Target, srcDir, Target.cssName),
             'postcss-loader',
             {
               loader: 'sass-loader'
@@ -86,14 +53,14 @@ module.exports = (env = {}) => {
         {
           test: /\.(wxss|acss)$/,
           use: [
-            relativeFileLoader(Target.cssName),
+            PreFileLoader(Target, srcDir, Target.cssName),
             '@ddjf/minprogram-webpack-plugin'
           ]
         },
         {
           test: /\.(wxs|sjs)$/,
           use: [
-            relativeFileLoader(Target.xjsName),
+            PreFileLoader(Target, srcDir, Target.xjsName),
             '@ddjf/minprogram-webpack-plugin',
             'babel-loader'
           ]
@@ -101,18 +68,18 @@ module.exports = (env = {}) => {
         {
           test: /\.json$/,
           type: 'javascript/auto',
-          use: relativeFileLoader()
+          use: PreFileLoader(Target, srcDir)
         },
         {
           test: /\.(axml|wxml)/,
           use: [
-            relativeFileLoader(Target.xmlName),
+            PreFileLoader(Target, srcDir, Target.xmlName),
             '@ddjf/minprogram-webpack-plugin'
           ]
         },
         {
           test: /\.(png|jpg|gif)$/,
-          use: relativeFileLoader()
+          use: PreFileLoader(Target, srcDir)
         }
       ]
     },
